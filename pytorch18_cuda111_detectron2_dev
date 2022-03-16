@@ -4,13 +4,12 @@ RUN pip install opencv-python einops matplotlib jpeg4py \
 RUN apt-get update && apt-get -y install libgl1
 RUN apt-get update -y && apt install -y build-essential
 RUN apt-get install -y libglib2.0-0
-RUN python -m pip install detectron2==0.6 -f   https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.8/index.html
-RUN python -m pip install facenet_pytorch
-RUN python -m pip install scipy Pillow
-RUN python -m pip install pandas
+RUN python -m pip install scipy Pillow pandas
 RUN apt-get update -y && apt-get install -y libglib2.0-0 git vim fish
 RUN mkdir git_intstalled_lib
 WORKDIR /workspace/git_intstalled_lib
 RUN pip install git+https://github.com/microsoft/ComputerVision.git@master#egg=utils_cv
 RUN python -m pip install decord albumentations
+RUN python -m pip uninstall -y typing
+RUN python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 WORKDIR /workspace/
