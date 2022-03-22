@@ -12,4 +12,9 @@ RUN pip install git+https://github.com/microsoft/ComputerVision.git@master#egg=u
 RUN python -m pip install decord albumentations
 RUN python -m pip uninstall -y typing
 RUN python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+WORKDIR /workspace/git_intstalled_lib/
+RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake.git
+RUN apt-get install -y libssl-dev
+WORKDIR /workspace/git_intstalled_lib/cmake/
+RUN ./bootstrap --parallel=8 && make -j8 && make install
 WORKDIR /workspace/
