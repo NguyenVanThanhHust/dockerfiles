@@ -18,3 +18,5 @@ RUN apt-get install -y libssl-dev
 WORKDIR /workspace/git_intstalled_lib/cmake/
 RUN ./bootstrap --parallel=8 && make -j8 && make install
 WORKDIR /workspace/
+RUN python -m pip install pytorch-lightning
+  
