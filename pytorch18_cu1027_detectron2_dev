@@ -1,24 +1,46 @@
-from pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
+FROM pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+
 RUN pip install opencv-python einops matplotlib jpeg4py \
-        tqdm timm pyyaml yacs easydict tensorboardX
-RUN apt-get update && apt-get -y install libgl1
-RUN apt-get update -y && apt install -y build-essential
-RUN apt-get install -y libglib2.0-0
-RUN python -m pip install facenet_pytorch
-RUN python -m pip install scipy Pillow
-RUN python -m pip install pandas
-RUN apt-get update -y && apt-get install -y libglib2.0-0 git vim fish
-RUN mkdir git_intstalled_lib
-WORKDIR /workspace/git_intstalled_lib
+        tqdm timm pyyaml yacs easydict tensorboardX scipy \
+        Pillow pandas decord scikit-image seaborn scipy \
+        pytorch-lightning pybind11 albumentations \
+        ffmpeg libsm6 libxext6 
+RUN apt-get update && apt-get -y install build-essential \
+    libssl-dev libgl1 libglib2.0-0 git vim fish \ 
+    libmagickwand-dev
+
+WORKDIR /git_intstalled_lib
 RUN pip install git+https://github.com/microsoft/ComputerVision.git@master#egg=utils_cv
-RUN python -m pip install decord scikit-image seaborn scipy
 RUN python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
-WORKDIR /workspace/git_intstalled_lib/
+WORKDIR /git_intstalled_lib/
 RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake.git
-RUN apt-get install -y libssl-dev
-WORKDIR /workspace/git_intstalled_lib/cmake/
+RUN apt-get install -y 
+WORKDIR /git_intstalled_lib/cmake/
 RUN ./bootstrap --parallel=8 && make -j8 && make install
-RUN python -m pip install pytorch-lightning pybind11 albumentations
+RUN python -m pip install 
 
 WORKDIR /workspace/
 
+ARG USERNAME=thanhnv
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# ********************************************************
+# * Anything else you want to do like clean up goes here *
+# ********************************************************
+
+# [Optional] Set the default user. Omit if you want to keep the default as root.
+USER $USERNAME
+                   
