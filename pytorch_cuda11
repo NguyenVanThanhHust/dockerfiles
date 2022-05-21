@@ -5,15 +5,13 @@ RUN apt-get update && apt-get -y install libgl1 build-essential libglib2.0-0 git
 
 RUN python -m pip install scipy Pillow pandas decord albumentations
 
-RUN mkdir git_intstalled_lib
-WORKDIR /workspace/git_intstalled_lib
+WORKDIR /git_intstalled_lib
 RUN pip install git+https://github.com/microsoft/ComputerVision.git@master#egg=utils_cv
 
-RUN python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
-WORKDIR /workspace/git_intstalled_lib/
+WORKDIR /git_intstalled_lib/
 RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake.git
 
-WORKDIR /workspace/git_intstalled_lib/cmake/
+WORKDIR /git_intstalled_lib/cmake/
 RUN ./bootstrap --parallel=8 && make -j8 && make install
 RUN python -m pip install pytorch-lightning pybind11
 
