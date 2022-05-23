@@ -22,7 +22,6 @@ RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake.git
 RUN apt-get install -y 
 WORKDIR /git_intstalled_lib/cmake/
 RUN ./bootstrap --parallel=8 && make -j8 && make install
-RUN python -m pip install 
 
 WORKDIR /workspace/
 
