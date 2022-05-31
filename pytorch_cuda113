@@ -1,7 +1,8 @@
-From nvcr.io/nvidia/pytorch:22.04-py3
+FROM pytorch/pytorch:1.11.0-cuda11.3-cudnn8-devel
 RUN pip install opencv-python einops matplotlib jpeg4py \
         tqdm timm pyyaml yacs easydict tensorboardX
-RUN apt-get update && apt-get -y install libgl1 build-essential libglib2.0-0 git vim fish libssl-dev
+RUN apt-get update && apt-get -y install libgl1 build-essential \
+    libglib2.0-0 git vim fish libssl-dev software-properties-common
 
 RUN python -m pip install scipy Pillow pandas decord albumentations pytorch-lightning pybind11
 
@@ -14,7 +15,6 @@ RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake.git
 WORKDIR /git_intstalled_lib/cmake/
 RUN ./bootstrap --parallel=8 && make -j8 && make install
 
-RUN python -m pip install loguru
 WORKDIR /workspace/  
 
 # ARG USERNAME=thanhnv
