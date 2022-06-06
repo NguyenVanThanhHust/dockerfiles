@@ -7,15 +7,17 @@ RUN cat /etc/lsb-release
 RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
 RUN apt-get update && apt-get -y install build-essential \
-    libssl-dev libgl1 libglib2.0-0 git vim fish \ 
+    libssl-dev libgl1 libglib2.0-0 git vim fish
+RUN apt-get update && apt-get -y install \  
     libmagickwand-dev libsm6 libxext6 libboost-all-dev \
-    software-properties-common
+    software-properties-common libgtk2.0-dev
 
 RUN pip install opencv-python einops matplotlib jpeg4py \
         tqdm timm pyyaml yacs easydict tensorboardX scipy \
-        Pillow pandas decord scikit-image seaborn scipy \
-        pytorch-lightning pybind11 albumentations \
-        ffmpeg onnx onnx-simplifier pytorch_lightning \
+        Pillow pandas decord scikit-image seaborn \
+        pytorch-lightning pybind11 albumentations
+        
+RUN pip install ffmpeg onnx onnx-simplifier pytorch_lightning \
         opencv-contrib-python\ 
         thop imutils loguru \
         onnxruntime-gpu
@@ -32,6 +34,88 @@ RUN ./bootstrap --parallel=8 && make -j8 && make install
 RUN apt-get update && \
     add-apt-repository -y ppa:webupd8team/java && \
     apt-get update && apt install -y openjdk-8-jdk zookeeperd net-tools
+
+RUN pip install gym[atari,accept-rom-license]==0.21.0
+
+WORKDIR /git_intstalled_lib/
+RUN git clone https://github.com/opencv/opencv.git -b 4.5.2
+RUN git clone https://github.com/opencv/opencv_contrib.git -b 4.5.2
+RUN git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.4 ffmpeg/
+RUN git config --global http.sslverify false
+
+RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git 
+
+# This part is for ffmpeg
+RUN apt-get install -y libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev libavdevice-dev
+
+WORKDIR /git_intstalled_lib/nv-codec-headers/
+RUN make install
+
+RUN apt-get install -y build-essential yasm cmake libtool libc6 libc6-dev unzip wget libnuma1 libnuma-dev
+WORKDIR /git_intstalled_lib/ffmpeg/
+RUN ./configure --enable-nonfree --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
+RUN make -j2 && make install
+
+WORKDIR /git_intstalled_lib/opencv/build/
+
+RUN opencv_cmake_flags=" \
+    -D BUILD_opencv_java=OFF \
+    -D BUILD_opencv_python=0 \
+    -D BUILD_opencv_python2=0 \
+    -D BUILD_opencv_python3=0 \
+    -D WITH_FFMPEG=ON \
+    -D BUILD_DOCS=OFF \
+    -D BUILD_TESTS=OFF \
+    -D BUILD_PERF_TESTS=OFF \
+    -D BUILD_JAVA=OFF \
+    -D BUILD_opencv_apps=OFF \
+    -D BUILD_opencv_aruco=OFF \
+    -D BUILD_opencv_bgsegm=OFF \
+    -D BUILD_opencv_bioinspired=OFF \
+    -D BUILD_opencv_ccalib=OFF \
+    -D BUILD_opencv_datasets=OFF \
+    -D BUILD_opencv_dnn_objdetect=OFF \
+    -D BUILD_opencv_dpm=OFF \
+    -D BUILD_opencv_fuzzy=OFF \
+    -D BUILD_opencv_hfs=OFF \
+    -D BUILD_opencv_java_bindings_generator=OFF \
+    -D BUILD_opencv_js=OFF \
+    -D BUILD_opencv_img_hash=OFF \
+    -D BUILD_opencv_line_descriptor=OFF \
+    -D BUILD_opencv_optflow=OFF \
+    -D BUILD_opencv_phase_unwrapping=OFF \
+    -D BUILD_opencv_python3=OFF \
+    -D BUILD_opencv_python_bindings_generator=OFF \
+    -D BUILD_opencv_reg=OFF \
+    -D BUILD_opencv_rgbd=OFF \
+    -D BUILD_opencv_saliency=OFF \
+    -D BUILD_opencv_shape=OFF \
+    -D BUILD_opencv_stereo=OFF \
+    -D BUILD_opencv_stitching=OFF \
+    -D BUILD_opencv_structured_light=OFF \
+    -D BUILD_opencv_superres=OFF \
+    -D BUILD_opencv_surface_matching=OFF \
+    -D BUILD_opencv_ts=OFF \
+    -D BUILD_opencv_xobjdetect=OFF \
+    -D BUILD_opencv_xphoto=OFF \
+    -D BUILD_opencv_dnn=OFF \
+    -D BUILD_opencv_stitching=OFF \
+    -D WITH_VTK=OFF \
+    -D WITH_QT=ON \
+    -D WITH_GTK=ON \
+    -D WITH_CUDNN=OFF \
+    -D WITH_CUBLAS=0 \
+    -D WITH_OPENCL=OFF \
+    -D WITH_CUDA=OFF \
+    -D CMAKE_INSTALL_PREFIX=$LIB_PREFIX \
+    -D CMAKE_BUILD_TYPE=RELEASE \    
+" && cmake $opencv_cmake_flag ..       
+RUN make -j3 && make install
+
+WORKDIR /git_intstalled_lib/
+RUN git clone https://github.com/Megvii-BaseDetection/YOLOX.git
+WORKDIR /git_intstalled_lib/YOLOX/
+RUN python setup.py install
 
 WORKDIR /workspace/
 
