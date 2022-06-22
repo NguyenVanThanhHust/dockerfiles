@@ -6,6 +6,8 @@ RUN apt-key del 7fa2af80
 RUN cat /etc/lsb-release
 RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get -y install build-essential \
     libssl-dev libgl1 libglib2.0-0 git vim fish
 RUN apt-get update && apt-get -y install \  
@@ -53,7 +55,7 @@ RUN make install
 
 RUN apt-get install -y build-essential yasm cmake libtool libc6 libc6-dev unzip wget libnuma1 libnuma-dev
 WORKDIR /git_intstalled_lib/ffmpeg/
-RUN ./configure --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
+RUN ./configure --enable-nonfree --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared --enable-gpl --enable-libx264 --enable-libx265 --enable-vp9-highbitdepth
 RUN make -j2 && make install
 
 WORKDIR /git_intstalled_lib/opencv/build/
@@ -119,6 +121,34 @@ RUN python setup.py install
 
 WORKDIR /workspace/
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf `# libnice` \
+    automake `# libnice` \
+    bison \
+    build-essential \
+    ca-certificates \
+    flex \
+    gettext \
+    git \
+    gnutls-dev `# libnice` \
+    gtk-doc-tools `# libnice` \
+    libffi-dev \
+    libglib2.0 \
+    libnice-dev \
+    libopus-dev \
+    libpcre3-dev \
+    libsrtp-dev \
+    libssl-dev `# needed for DTLS requirement`\
+    libtool `# libnice` \
+    libvpx-dev \
+    libx264-dev \
+    mount \
+    perl \
+    python \
+    wget \
+    zlib1g \
+
+    
 # ARG USERNAME=thanhnv
 # ARG USER_UID=1000
 # ARG USER_GID=$USER_UID
