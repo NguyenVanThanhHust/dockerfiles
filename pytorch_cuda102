@@ -128,7 +128,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     perl \
     python \
     wget \
-    zlib1g \
+    zlib1g
 
     
 # ARG USERNAME=thanhnv
