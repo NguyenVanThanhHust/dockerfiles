@@ -31,75 +31,10 @@ RUN apt-get update && \
 RUN pip install gym[atari,accept-rom-license]==0.21.0
 
 
-RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git 
-
 # This part is for ffmpeg
 RUN apt-get install -y libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev libavdevice-dev
 
-WORKDIR /git_intstalled_lib/nv-codec-headers/
-RUN make install
-
 RUN apt-get install -y build-essential yasm cmake libtool libc6 libc6-dev unzip wget libnuma1 libnuma-dev
-WORKDIR /git_intstalled_lib/ffmpeg/
-RUN apt-get install -y yasm libvpx. libx264. libx265-dev
-RUN ./configure --enable-nonfree --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared  --disable-opencl --enable-shared --enable-gpl --enable-libx264 --enable-libx265 --extra-libs=-lpthread
-RUN make -j2 && make install
-
-WORKDIR /git_intstalled_lib/opencv/build/
-
-RUN opencv_cmake_flags=" \
-    -D BUILD_opencv_java=OFF \
-    -D BUILD_opencv_python=0 \
-    -D BUILD_opencv_python2=0 \
-    -D BUILD_opencv_python3=0 \
-    -D WITH_FFMPEG=ON \
-    -D BUILD_DOCS=OFF \
-    -D BUILD_TESTS=OFF \
-    -D BUILD_PERF_TESTS=OFF \
-    -D BUILD_JAVA=OFF \
-    -D BUILD_opencv_apps=OFF \
-    -D BUILD_opencv_aruco=OFF \
-    -D BUILD_opencv_bgsegm=OFF \
-    -D BUILD_opencv_bioinspired=OFF \
-    -D BUILD_opencv_ccalib=OFF \
-    -D BUILD_opencv_datasets=OFF \
-    -D BUILD_opencv_dnn_objdetect=OFF \
-    -D BUILD_opencv_dpm=OFF \
-    -D BUILD_opencv_fuzzy=OFF \
-    -D BUILD_opencv_hfs=OFF \
-    -D BUILD_opencv_java_bindings_generator=OFF \
-    -D BUILD_opencv_js=OFF \
-    -D BUILD_opencv_img_hash=OFF \
-    -D BUILD_opencv_line_descriptor=OFF \
-    -D BUILD_opencv_optflow=OFF \
-    -D BUILD_opencv_phase_unwrapping=OFF \
-    -D BUILD_opencv_python3=OFF \
-    -D BUILD_opencv_python_bindings_generator=OFF \
-    -D BUILD_opencv_reg=OFF \
-    -D BUILD_opencv_rgbd=OFF \
-    -D BUILD_opencv_saliency=OFF \
-    -D BUILD_opencv_shape=OFF \
-    -D BUILD_opencv_stereo=OFF \
-    -D BUILD_opencv_stitching=OFF \
-    -D BUILD_opencv_structured_light=OFF \
-    -D BUILD_opencv_superres=OFF \
-    -D BUILD_opencv_surface_matching=OFF \
-    -D BUILD_opencv_ts=OFF \
-    -D BUILD_opencv_xobjdetect=OFF \
-    -D BUILD_opencv_xphoto=OFF \
-    -D BUILD_opencv_dnn=OFF \
-    -D BUILD_opencv_stitching=OFF \
-    -D WITH_VTK=OFF \
-    -D WITH_QT=ON \
-    -D WITH_GTK=ON \
-    -D WITH_CUDNN=OFF \
-    -D WITH_CUBLAS=0 \
-    -D WITH_OPENCL=OFF \
-    -D WITH_CUDA=OFF \
-    -D CMAKE_INSTALL_PREFIX=$LIB_PREFIX \
-    -D CMAKE_BUILD_TYPE=RELEASE \    
-" && cmake $opencv_cmake_flag ..       
-RUN make -j3 && make install
 
 WORKDIR /workspace/
 

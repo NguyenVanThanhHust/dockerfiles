@@ -31,22 +31,44 @@ RUN apt-get update && \
 RUN pip install gym[atari,accept-rom-license]==0.21.0
 
 
-RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git 
-
 # This part is for ffmpeg
 RUN apt-get install -y libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev libavdevice-dev
 
-WORKDIR /git_intstalled_lib/nv-codec-headers/
-RUN make install
-
 RUN apt-get install -y build-essential yasm cmake libtool libc6 libc6-dev unzip wget libnuma1 libnuma-dev
-WORKDIR /git_intstalled_lib/ffmpeg/
-RUN apt-get install -y yasm libvpx. libx264. libx265-dev
-RUN ./configure --enable-nonfree --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared  --disable-opencl --enable-shared --enable-gpl --enable-libx264 --enable-libx265 --extra-libs=-lpthread
-RUN make -j2 && make install
 
-WORKDIR /git_intstalled_lib/opencv/build/
+WORKDIR /workspace/
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf `# libnice` \
+    automake `# libnice` \
+    bison \
+    build-essential \
+    ca-certificates \
+    flex \
+    gettext \
+    git \
+    gnutls-dev `# libnice` \
+    gtk-doc-tools `# libnice` \
+    libffi-dev \
+    libglib2.0 \
+    libnice-dev \
+    libopus-dev \
+    libpcre3-dev \
+    libsrtp-dev \
+    libssl-dev `# needed for DTLS requirement`\
+    libtool `# libnice` \
+    libvpx-dev \
+    libx264-dev \
+    mount \
+    perl \
+    python \
+    wget \
+    zlib1g
+
+WORKDIR /git_installed_libs/
+RUN git clone https://github.com/opencv/opencv.git -b 4.5.2
+RUN git clone https://github.com/opencv/opencv_contrib.git -b 4.5.2
+WORKDIR /git_installed_libs/opencv/build/
 RUN opencv_cmake_flags=" \
     -D BUILD_opencv_java=OFF \
     -D BUILD_opencv_python=0 \
@@ -98,39 +120,10 @@ RUN opencv_cmake_flags=" \
     -D WITH_CUDA=OFF \
     -D CMAKE_INSTALL_PREFIX=$LIB_PREFIX \
     -D CMAKE_BUILD_TYPE=RELEASE \    
-" && cmake $opencv_cmake_flag ..       
-RUN make -j3 && make install
+" && cmake $opencv_cmake_flag ..   
+RUN make -j2 && make install
 
 WORKDIR /workspace/
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    autoconf `# libnice` \
-    automake `# libnice` \
-    bison \
-    build-essential \
-    ca-certificates \
-    flex \
-    gettext \
-    git \
-    gnutls-dev `# libnice` \
-    gtk-doc-tools `# libnice` \
-    libffi-dev \
-    libglib2.0 \
-    libnice-dev \
-    libopus-dev \
-    libpcre3-dev \
-    libsrtp-dev \
-    libssl-dev `# needed for DTLS requirement`\
-    libtool `# libnice` \
-    libvpx-dev \
-    libx264-dev \
-    mount \
-    perl \
-    python \
-    wget \
-    zlib1g
-
-    
 # ARG USERNAME=thanhnv
 # ARG USER_UID=1000
 # ARG USER_GID=$USER_UID
