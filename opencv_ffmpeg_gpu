@@ -1,6 +1,15 @@
 FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
 # https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/
 
+RUN rm /etc/apt/sources.list.d/cuda.list
+RUN rm /etc/apt/sources.list.d/nvidia-ml.list
+RUN apt-key del 7fa2af80
+
+RUN cat /etc/lsb-release
+RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Install some basic utilities
 RUN apt-get update && apt-get install -y \
     curl \
