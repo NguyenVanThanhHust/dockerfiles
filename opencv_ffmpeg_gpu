@@ -35,32 +35,30 @@ RUN apt-get update && apt-get install -y \
     gdb valgrind \
  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /workspace/
-WORKDIR /workspace/
+WORKDIR /git_installed_libs/
 
 RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake.git
-WORKDIR /workspace/cmake/
+WORKDIR /git_installed_libs/cmake/
 RUN ./bootstrap --parallel=8 && make -j8 && make install
 
-WORKDIR /workspace/
+WORKDIR /git_installed_libs/
 RUN git clone https://github.com/opencv/opencv.git -b 4.5.2
 RUN git clone https://github.com/opencv/opencv_contrib.git -b 4.5.2
 RUN git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.4 ffmpeg/
 RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git 
 
-RUN mkdir /workspace/projects/
 RUN apt-get update
 
 # Install boost
-WORKDIR /workspace/projects/
+WORKDIR /git_installed_libs/
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2 && tar -xvf boost_1_78_0.tar.bz2
-WORKDIR /workspace/projects/boost_1_78_0/
+WORKDIR /git_installed_libs/boost_1_78_0/
 RUN apt-get -y update && apt-get install -y build-essential g++ python-dev autotools-dev libicu-dev libbz2-dev
 RUN ./bootstrap.sh --prefix=/usr/local/
 RUN ./b2 -j8 variant=release link=shared threading=multi runtime-link=shared
 RUN ./b2 -j8 install
 
-WORKDIR /workspace/projects/
+WORKDIR /git_installed_libs/
 
 
 # Install pkg config to find ffmpeg
@@ -89,17 +87,17 @@ RUN apt-get update -qq  && apt-get install -y autoconf \
     zlib1g-dev
 
 # RUN apt-get install -y libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev libavdevice-dev
-RUN apt-get install -y libavdevice-dev
+RUN apt-get install -y libavdevice-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev libavdevice-dev
 
-WORKDIR /workspace/nv-codec-headers/
+WORKDIR /git_installed_libs/nv-codec-headers/
 RUN make install
 
 RUN apt-get install -y build-essential yasm cmake libtool libc6 libc6-dev unzip wget libnuma1 libnuma-dev
-WORKDIR /workspace/ffmpeg/
+WORKDIR /git_installed_libs/ffmpeg/
 RUN ./configure --enable-nonfree --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 --disable-static --enable-shared
 RUN make -j2 && make install
 
-WORKDIR /workspace/
+WORKDIR /git_installed_libs/
 
 ARG LIB_PREFIX='/usr/local'
 ENV CXXFLAGS="-D__STDC_CONSTANT_MACROS"
@@ -108,66 +106,68 @@ ENV LIB_PREFIX=${LIB_PREFIX} \
 
 RUN echo $(ffmpeg -version)
 
-RUN apt-get update && apt-get install -y libgtk-3-dev
-RUN apt-get update && apt-get install -y vim
+RUN apt-get update && apt-get install -y libgtk-3-dev vim fish
 
-RUN mkdir -p /workspace/opencv/build/
-WORKDIR /workspace/opencv/build/
-# RUN cmake .. -D BUILD_opencv_java=OFF -D BUILD_opencv_python=0  -D BUILD_opencv_python2=0 -D BUILD_opencv_python3=0 -DOPENCV_EXTRA_MODULES_PATH= ../../opencv_contrib/modules/ -D OPENCV_ENABLE_NONFREE=1 -D WITH_FFMPEG=ON -D OPENCV_FFMPEG_SKIP_BUILD_CHECK=ON
-RUN opencv_cmake_flags=" \
-    -D BUILD_opencv_java=OFF \
-    -D BUILD_opencv_python=0 \
-    -D BUILD_opencv_python2=0 \
-    -D BUILD_opencv_python3=0 \
-    -D WITH_FFMPEG=ON \
-    -D BUILD_DOCS=OFF \
-    -D BUILD_TESTS=OFF \
-    -D BUILD_PERF_TESTS=OFF \
-    -D BUILD_JAVA=OFF \
-    -D BUILD_opencv_apps=OFF \
-    -D BUILD_opencv_aruco=OFF \
-    -D BUILD_opencv_bgsegm=OFF \
-    -D BUILD_opencv_bioinspired=OFF \
-    -D BUILD_opencv_ccalib=OFF \
-    -D BUILD_opencv_datasets=OFF \
-    -D BUILD_opencv_dnn_objdetect=OFF \
-    -D BUILD_opencv_dpm=OFF \
-    -D BUILD_opencv_fuzzy=OFF \
-    -D BUILD_opencv_hfs=OFF \
-    -D BUILD_opencv_java_bindings_generator=OFF \
-    -D BUILD_opencv_js=OFF \
-    -D BUILD_opencv_img_hash=OFF \
-    -D BUILD_opencv_line_descriptor=OFF \
-    -D BUILD_opencv_optflow=OFF \
-    -D BUILD_opencv_phase_unwrapping=OFF \
-    -D BUILD_opencv_python3=OFF \
-    -D BUILD_opencv_python_bindings_generator=OFF \
-    -D BUILD_opencv_reg=OFF \
-    -D BUILD_opencv_rgbd=OFF \
-    -D BUILD_opencv_saliency=OFF \
-    -D BUILD_opencv_shape=OFF \
-    -D BUILD_opencv_stereo=OFF \
-    -D BUILD_opencv_stitching=OFF \
-    -D BUILD_opencv_structured_light=OFF \
-    -D BUILD_opencv_superres=OFF \
-    -D BUILD_opencv_surface_matching=OFF \
-    -D BUILD_opencv_ts=OFF \
-    -D BUILD_opencv_xobjdetect=OFF \
-    -D BUILD_opencv_xphoto=OFF \
-    -D WITH_VTK=OFF \
-    -D CMAKE_INSTALL_PREFIX=$LIB_PREFIX \
-    -D WITH_QT=ON \
-    -D WITH_GTK=ON \
-    -D WITH_CUDA=ON \
-    -D WITH_CUDNN=ON \
-    -D OPENCV_DNN_CUDA=ON \
-    -D WITH_CUBLAS=ON \
-    -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.2 \
-    -D OpenCL_LIBRARY=/usr/local/cuda-10.2/lib64/libOpenCL.so \
-    -D OpenCL_INCLUDE_DIR=/usr/local/cuda-10.2/include/ \
-    -D CMAKE_BUILD_TYPE=RELEASE \    
-" && cmake $opencv_cmake_flag ..       
+RUN mkdir -p /git_installed_libs/opencv/build/
+WORKDIR /git_installed_libs/opencv/build/
 
-RUN make -j2 && make install 
+RUN cmake \
+    -DBUILD_opencv_java=OFF \
+    -DBUILD_opencv_python=OFF \
+    -DBUILD_opencv_python2=OFF \
+    -DBUILD_opencv_python3=OFF	 \
+    -DOPENCV_ENABLE_NONFREE=ON \
+    -DWITH_FFMPEG=ON \
+    -DBUILD_DOCS=OFF \
+    -DBUILD_TESTS=OFF \
+    -DBUILD_PERF_TESTS=OFF \
+    -DBUILD_JAVA=OFF \
+    -DBUILD_opencv_apps=OFF \
+    -DBUILD_opencv_aruco=OFF \
+    -DBUILD_opencv_bgsegm=OFF \
+    -DBUILD_opencv_bioinspired=OFF \
+    -DBUILD_opencv_ccalib=OFF \
+    -DBUILD_opencv_datasets=OFF \
+    -DBUILD_opencv_dnn_objdetect=OFF \
+    -DBUILD_opencv_dpm=OFF \
+    -DBUILD_opencv_fuzzy=OFF \
+    -DBUILD_opencv_hfs=OFF \
+    -DBUILD_opencv_java_bindings_generator=OFF \
+    -DBUILD_opencv_js=OFF \
+    -DBUILD_opencv_img_hash=OFF \
+    -DBUILD_opencv_line_descriptor=OFF \
+    -DBUILD_opencv_optflow=OFF \
+    -DBUILD_opencv_phase_unwrapping=OFF \
+    -DBUILD_opencv_python3=OFF \
+    -DBUILD_opencv_python_bindings_generator=OFF \
+    -DBUILD_opencv_reg=OFF \
+    -DBUILD_opencv_rgbd=OFF \
+    -DBUILD_opencv_saliency=OFF \
+    -DBUILD_opencv_shape=OFF \
+    -DBUILD_opencv_stereo=OFF \
+    -DBUILD_opencv_stitching=OFF \
+    -DBUILD_opencv_structured_light=OFF \
+    -DBUILD_opencv_superres=OFF \
+    -DBUILD_opencv_surface_matching=OFF \
+    -DBUILD_opencv_ts=OFF \
+    -DBUILD_opencv_cudacodec=ON \
+    -DBUILD_opencv_xobjdetect=OFF \
+    -DBUILD_opencv_xphoto=OFF \
+    -DWITH_VTK=OFF \
+    -DCMAKE_INSTALL_PREFIX=$LIB_PREFIX \
+    -DOPENCV_GENERATE_PKGCONFIG=ON \
+    -DWITH_QT=OFF \
+    -DWITH_GTK=ON \
+    -DWITH_CUDA=ON \
+    -DWITH_CUDNN=ON \
+    -DOPENCV_DNN_CUDA=ON \
+    -DWITH_CUBLAS=ON \
+    -DOPENCV_EXTRA_MODULES_PATH=/git_installed_libs/opencv_contrib/modules/ \
+    -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.2 \
+    -DOpenCL_LIBRARY=/usr/local/cuda-10.2/lib64/libOpenCL.so \
+    -DOpenCL_INCLUDE_DIR=/usr/local/cuda-10.2/include/ \
+    -DCMAKE_BUILD_TYPE=RELEASE ..
+
+RUN make -j4 && make install 
 RUN apt-get update
-WORKDIR /workspace/projects/
+WORKDIR /workspace/
