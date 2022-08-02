@@ -123,6 +123,7 @@ RUN opencv_cmake_flags=" \
 " && cmake $opencv_cmake_flag ..   
 RUN make -j2 && make install
 
+RUN apt install libnvidia-gl-440
 WORKDIR /workspace/
 # ARG USERNAME=thanhnv
 # ARG USER_UID=1000
