@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:1.8.1-cuda10.2-cudnn7-devel
+FROM pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
 RUN rm /etc/apt/sources.list.d/cuda.list
 RUN rm /etc/apt/sources.list.d/nvidia-ml.list
 RUN apt-key del 7fa2af80
@@ -124,7 +124,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # " && cmake $opencv_cmake_flag ..   
 # RUN make -j2 && make install
 
-
 RUN apt-get update && apt install -y libnvidia-gl-440
 RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
@@ -149,6 +148,8 @@ RUN pip install mmdet==2.6.0 \
                 mlflow
                 
 WORKDIR /workspace/
+
+    
 # ARG USERNAME=thanhnv
 # ARG USER_UID=1000
 # ARG USER_GID=$USER_UID

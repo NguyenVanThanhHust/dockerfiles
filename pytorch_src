@@ -1,4 +1,4 @@
-ARG CUDA_VERSION=11.7.0
+ARG CUDA_VERSION=10.2
 ARG CUDNN_VERSION=8
 ARG UBUNTU_VERSION=18.04
 
@@ -63,8 +63,6 @@ RUN apt-get -qq update && \
         libxrender1 \
         libxvidcore-dev \
         pkg-config \
-
-
         protobuf-compiler \
         qt5-default \
         unzip \
@@ -177,21 +175,21 @@ RUN wget \
 RUN conda install -y astunparse numpy ninja pyyaml setuptools cmake cffi typing_extensions future six requests dataclasses
 
 RUN conda install -y mkl mkl-include
-RUN conda install -c pytorch -y magma-cuda117
-
-
-RUN apt-get install -y libomp-dev
 
 WORKDIR /opt/
 RUN git clone --recursive https://github.com/pytorch/pytorch
 
+RUN conda install -c pytorch -y magma-cuda102
+
+
+RUN apt-get install -y libomp-dev
+
+
 ENV USE_CUDA 1
 ENV USE_CUDNN 1
 ENV USE_MKLDNN 1
-
-ARG USE_CUDA 1
-ARG USE_CUDNN 1
-ARG USE_MKLDNN 1
+ENV MAX_JOBS 2
+ENV REL_WITH_DEB_INFO 1
 
 WORKDIR /opt/pytorch/
 RUN python setup.py install
